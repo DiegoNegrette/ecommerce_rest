@@ -6,15 +6,7 @@ from simple_history.models import HistoricalRecords
 class UserManager(BaseUserManager):
 
     def _create_user(self, username, email, name, last_name, password, is_staff, is_superuser, **extra_fields):
-        user = self.model(
-            username = username,
-            email = email,
-            name = name,
-            last_name = last_name,
-            is_staff = is_staff,
-            is_superuser = is_superuser,
-            **extra_fields
-        )
+        user = self.model(username=username, email=email, name=name, last_name=last_name, is_staff=is_staff, is_superuser=is_superuser, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
         return user
@@ -29,7 +21,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
 
     username = models.CharField(max_length=255, unique=True)
-    email = models.EmailField('email address',max_length=255, unique=True,)
+    email = models.EmailField('email address', max_length=255, unique=True,)
     name = models.CharField('name', max_length=255, blank=True, null=True)
     last_name = models.CharField('last name', max_length=255, blank=True, null=True)
     image = models.ImageField('profile image', upload_to='profile/', max_length=255, null=True, blank=True)
@@ -43,7 +35,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = 'Users'
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email','name','last_name']
+    REQUIRED_FIELDS = ['email', 'name', 'last_name']
 
     def __str__(self):
         return f'{self.name} {self.last_name}'
