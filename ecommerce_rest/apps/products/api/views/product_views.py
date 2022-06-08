@@ -1,18 +1,13 @@
-from apps.base.api import GeneralListAPIView
 from apps.products.api.serializers.product_serializer import ProductSerializer
 
 from rest_framework import generics, status
 from rest_framework.response import Response
 
 
-class ProductListAPIView(GeneralListAPIView):
+class ProductListCreateAPIView(generics.ListCreateAPIView):
 
     serializer_class = ProductSerializer
-
-
-class ProductCreateAPIView(generics.CreateAPIView):
-
-    serializer_class = ProductSerializer
+    queryset = ProductSerializer.Meta.model.objects.filter(state=True)
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -22,38 +17,15 @@ class ProductCreateAPIView(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProductRetrieveAPIView(generics.RetrieveAPIView):
+class ProductRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = ProductSerializer
 
-    def get_queryset(self):
-        return self.get_serializer().Meta.model.objects.filter(state=True)
-
-    # def get(self, request, pk=None):
-    #     pass
-
-
-class ProductDestroyAPIView(generics.DestroyAPIView):
-
-    serializer_class = ProductSerializer
-
-    def get_queryset(self):
-        return self.get_serializer().Meta.model.objects.filter(state=True)
-
-    def delete(self, request, pk=None):
-        product = self.get_queryset().filter(id=pk).first()
-        if product:
-            product.state = False
-            product.save()
-            return Response({"message": "Product deleted correctly!"}, status=status.HTTP_200_OK)
-        return Response({"error": "A product with this data does not exist!"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ProductUpdateAPIView(generics.UpdateAPIView):
-    serializer_class = ProductSerializer
-
-    def get_queryset(self, pk):
-        return self.get_serializer().Meta.model.objects.filter(state=True).filter(id=pk).first()
+    def get_queryset(self, pk=None):
+        if pk is None:
+            return self.get_serializer().Meta.model.objects.filter(state=True)
+        else:
+            return self.get_serializer().Meta.model.objects.filter(state=True).filter(id=pk).first()
 
     def patch(self, request, pk=None):
         if self.get_queryset(pk):
@@ -68,3 +40,11 @@ class ProductUpdateAPIView(generics.UpdateAPIView):
                 product_serializer.save()
                 return Response(product_serializer.data, status=status.HTTP_200_OK)
             return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk=None):
+        product = self.get_queryset().filter(id=pk).first()
+        if product:
+            product.state = False
+            product.save()
+            return Response({"message": "Product deleted correctly!"}, status=status.HTTP_200_OK)
+        return Response({"error": "A product with this data does not exist!"}, status=status.HTTP_400_BAD_REQUEST)
